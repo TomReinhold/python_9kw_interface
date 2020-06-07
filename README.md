@@ -1,1 +1,1 @@
-# This will be an interface to interact with 9kw.eu
+# This will be a python library to interact with 9kw.eu
