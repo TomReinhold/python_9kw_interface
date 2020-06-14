@@ -88,8 +88,10 @@ class nine_kw:
         Submit a captcha.
 
         Args:
-            captcha (str, bytes): Submit your captcha as filepath
-            or binary file.
+            captcha (str, bytes): Submit your captcha as
+            filepath,
+            binary file or
+            url.
         """
         
         if self._id is not None:
@@ -105,9 +107,17 @@ class nine_kw:
 
         if isinstance(captcha, str):
             # check if file is valid
-            if not os.path.isfile(captcha):
+            if captcha.startswith("http"):
+                img = requests.get(captcha, allow_redirects=True)
+                if img.status_code != 200:
+                    raise FileNotFoundError("can't open url")
+                else:
+                    files = {'file-upload-01': (img.content)}
+
+            elif not os.path.isfile(captcha):
                 raise FileNotFoundError("File not fount @ %s" % captcha)
-            files = {'file-upload-01': open(captcha, "rb")}
+            else:
+                files = {'file-upload-01': open(captcha, "rb")}
         elif isinstance(captcha, bytes):
             # wahrscheinlich fehlt hier filename
             files = {'file-upload-01': (captcha)}
@@ -200,14 +210,15 @@ class nine_kw:
 
 
 if __name__ == "__main__":
-    solver = nine_kw("Your API CODE", priority=0, timeout=300)
+    solver = nine_kw("API-key", priority=0, timeout=300)
     print(solver.credits)
-    solver.submit("test.gif")
+    # solver.submit("test.gif")
+    solver.submit("https://opfcaptcha-prod.s3.amazonaws.com/03b1c1052b6d4d1eb62a1fbdee9740bc.gif?AWSAccessKeyId=AKIA5WBBRBBBWROUAICF&Expires=1592143542&Signature=Yqxs2g4M18%2FswSBreVaRX7W97wo%3D")
     result = solver.result_loop()
     print(result)
     if result is None:
         solver.result_feedback(None)
     else:
-        correct = (result == "kM7wuT")
+        # correct = (result == "kM7wuT")
         print(correct)
         solver.result_feedback(correct)
